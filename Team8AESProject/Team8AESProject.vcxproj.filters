@@ -18,5 +18,11 @@
     <ClCompile Include="AESexample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Team8AESImplementation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

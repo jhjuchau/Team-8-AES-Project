@@ -1,6 +1,7 @@
+/*
+
 //WE USED THIS AS AN EXAMPLE
 
-/*
 
 ******************************************************************
 
@@ -50,13 +51,14 @@ http://en.wikipedia.org/wiki/Advanced_Encryption_Standard
 
 ******************************************************************
 
-*/
+
 
 // Include stdio.h for standard input/output.
 
 // Used for giving output to the screen.
-
+#include<iostream>
 #include<stdio.h>
+using namespace std;
 
 // The number of columns comprising a state in AES. This is a constant in AES. Value=4
 
@@ -524,7 +526,7 @@ void main()
 
 		printf("Enter the length of Key(128, 192 or 256 only): ");
 
-		scanf("%d", &Nr);
+		scanf_s("%d", &Nr);
 
 	}
 
@@ -564,11 +566,11 @@ void main()
 
 	//     Part 2: ********************************************************
 
-	/*
+	
 
 	//Clear the input buffer
 
-	flushall();
+	_flushall();
 
 	//Recieve the Key from the user
 
@@ -578,7 +580,7 @@ void main()
 
 	{
 
-	scanf("%x",&Key[i]);
+	scanf_s("%x",&Key[i]);
 
 	}
 
@@ -588,11 +590,11 @@ void main()
 
 	{
 
-	scanf("%x",&in[i]);
+	scanf_s("%x",&in[i]);
 
 	}
 
-	*/
+	
 
 	//             ********************************************************
 
@@ -617,5 +619,9 @@ void main()
 	}
 
 	printf("\n\n");
+	system("pause");
+	return;
 
 }
+
+*/

@@ -65,6 +65,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AESexample.cpp" />
+    <ClCompile Include="Team8AESImplementation.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
