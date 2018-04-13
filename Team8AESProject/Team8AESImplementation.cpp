@@ -4,18 +4,21 @@ using namespace std;
 
 #define COLS 4		//COLS
 
+// xtime is a macro that finds the product of {02} and the argument to xtime modulo {1b}
+
+#define xtime(x)   ((x<<1) ^ (((x>>7) & 1) * 0x1b))
+
+// MixColumns function mixes the columns of the state matrix
+
+// The method used may look complicated, but it is easy if you know the underlying theory.
+
+// Refer the documents specified above.
+
 int maxRounds = 0;		//maxRounds
 
 int words = 0;		//words
 
-// in - it is the array that holds the plain text to be encrypted.
-
-// out - it is the array that holds the output CipherText after encryption.
-
-// state - the array that holds the intermediate results during encryption.
-
 unsigned char in[16], out[16], state[4][4];
-
 // The array that stores the round keys.
 
 unsigned char RoundKey[240];
@@ -160,25 +163,15 @@ void KeyExpansion()
 // The round key is added to the state by an XOR function.
 
 void AddRoundKey(int round)
-
 {
-
 	int i, j;
-
 	for (i = 0; i<4; i++)
-
 	{
-
 		for (j = 0; j<4; j++)
-
 		{
-
 			state[j][i] ^= RoundKey[round * COLS * 4 + i * COLS + j];
-
 		}
-
 	}
-
 }
 
 // The SubBytes Function Substitutes the values in the
@@ -214,35 +207,24 @@ void SubBytes()
 // Offset = Row number. So the first row is not shifted.
 
 void ShiftRows()
-
 {
-
 	unsigned char temp;
-
 	// Rotate first row 1 columns to left
-
 	temp = state[1][0];
-
 	state[1][0] = state[1][1];
-
 	state[1][1] = state[1][2];
-
 	state[1][2] = state[1][3];
-
 	state[1][3] = temp;
 
 	// Rotate second row 2 columns to left
 
 	temp = state[2][0];
-
 	state[2][0] = state[2][2];
-
 	state[2][2] = temp;
 
 	temp = state[2][1];
 
 	state[2][1] = state[2][3];
-
 	state[2][3] = temp;
 
 	// Rotate third row 3 columns to left
@@ -250,24 +232,13 @@ void ShiftRows()
 	temp = state[3][0];
 
 	state[3][0] = state[3][3];
-
 	state[3][3] = state[3][2];
-
 	state[3][2] = state[3][1];
-
 	state[3][1] = temp;
 
 }
 
-// xtime is a macro that finds the product of {02} and the argument to xtime modulo {1b}
 
-#define xtime(x)   ((x<<1) ^ (((x>>7) & 1) * 0x1b))
-
-// MixColumns function mixes the columns of the state matrix
-
-// The method used may look complicated, but it is easy if you know the underlying theory.
-
-// Refer the documents specified above.
 
 void MixColumns()
 
@@ -355,7 +326,7 @@ void Cipher()
 	}
 }
 
-void main2()
+void encrypt()
 {
 	int i;
 	// Receive the length of key here.
