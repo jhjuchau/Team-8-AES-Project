@@ -3,7 +3,7 @@
 #include <string>
 #include <stdio.h>
 
-//#include "Encryptor.h"
+#include "Encryptor.h"
 
 #define COLS 4;
 
@@ -59,10 +59,17 @@ int main()
 	//cout<<object.Rcon[2];
 
 	//output
+	
+	Encryptor object(Rcon);
+
+	object.Encrypt();
+
+
 	ofstream OutFile("out.txt");
 	// \\/ will allow it to display
 	OutFile << "Result";
 	OutFile.close();
+
 
 	system("pause");
 	return 0;

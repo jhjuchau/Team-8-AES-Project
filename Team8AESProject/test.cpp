@@ -1,6 +1,7 @@
+/*
 #include <iostream>
 #include <string>
-#include "Encryptor.h"
+
 using namespace std;
 
 
@@ -31,4 +32,4 @@ int main2(){
 
 	system("pause");
 	return 0;
-}
+}/*/
