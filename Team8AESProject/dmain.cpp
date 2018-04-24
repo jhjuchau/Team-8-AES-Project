@@ -11,7 +11,7 @@ using namespace std;
 
 int main()
 {
-	string Input;
+	char Input[1000];
 
 	string FileLocation;
 	ifstream TheFile;
@@ -50,8 +50,16 @@ int main()
 		TheFile.open(FileLocation);
 	}
 
+	int index = 0;
+	string in;
 	//extracts the content from the file
-	TheFile >> Input;
+	while (TheFile.eof())
+	{
+		TheFile >> in;
+		Input[index] = in[0];
+		index++;
+	}
+
 	TheFile.close();
 
 	//encrypt function goes here
@@ -62,7 +70,10 @@ int main()
 	
 	Encryptor object(Rcon);
 
-	object.Encrypt();
+	cout << "In main, Input is: " << Input << endl;
+	cout << "There are " << index << " characters in the file specified." << endl;
+	system("pause");
+	object.Encrypt(Input);
 
 
 	ofstream OutFile("out.txt");

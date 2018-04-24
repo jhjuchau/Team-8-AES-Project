@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include <string>
 #ifndef Encryptor.h
 
 
 #define xtime(x)   ((x << 1) ^ (((x >> 7) & 1) * 0x1b))
 #define RCONSIZE 255
 
+using namespace std;
 
 /*
 TO DO LIST
@@ -42,7 +44,7 @@ TO DO LIST
 	void ShiftRows();
 	void MixColumns();
 	void Cipher();
-	void Encrypt();
+	void Encrypt(string input);
 };
 
 Encryptor::Encryptor(int in[])
@@ -260,10 +262,12 @@ void Encryptor::Cipher()
 	}
 }
 
-void Encryptor::Encrypt()
+void Encryptor::Encrypt(string Input)
 {
 	int i;
 	// Receive the length of key here.
+	cout << "Input is :" << Input << endl;
+
 
 	while (maxRounds != 128 && maxRounds != 192 && maxRounds != 256)
 		{
@@ -285,7 +289,13 @@ void Encryptor::Encrypt()
 
 	unsigned char temp[16] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
 
-	unsigned char temp2[16] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
+	//unsigned char temp2[16] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
+	unsigned char temp2[16];
+
+	for (i = 0; i < 16; i++)
+	{
+		temp2[i] = Input[i];
+	}
 
 	// Copy the Key and PlainText
 
