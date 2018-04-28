@@ -10,12 +10,7 @@
 using namespace std;
 
 int main()
-{
-	char Input[1000];
-
-	string FileLocation;
-	ifstream TheFile;
-
+{					//8d = 141 in decimal
 	int Rcon[255] = { 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a,
 		0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39,
 		0x72, 0xe4, 0xd3, 0xbd, 0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a,
@@ -32,14 +27,21 @@ int main()
 		0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63,
 		0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd,
 		0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb };
+	
+	
+	
+	string FileLocation;
+	ifstream TheFile;
 
 
 	//get file location
-	cout << "Please enter the location of the file: ";
-	getline(cin, FileLocation);
+	//cout << "Please enter the location of the file: ";				//<----
+	//getline(cin, FileLocation);										//<----
 
+	FileLocation = "C:/Users/James/Desktop/test.txt";
 	//opens the file
-	TheFile.open(FileLocation);
+	std::ifstream ifs(FileLocation);
+	std::string Input((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
 	//check if the file is opened properly
 	while (TheFile.fail())
@@ -50,35 +52,25 @@ int main()
 		TheFile.open(FileLocation);
 	}
 
-	int index = 0;
-	string in;
 	//extracts the content from the file
-	while (TheFile.eof())
-	{
-		TheFile >> in;
-		Input[index] = in[0];
-		index++;
-	}
 
+	TheFile >> Input;
 	TheFile.close();
 
 	//encrypt function goes here
-	//Encryptor object(Rcon);
-	//cout<<object.Rcon[2];
+	Encryptor object(Rcon);
+	
 
 	//output
-	
-	Encryptor object(Rcon);
 
 	cout << "In main, Input is: " << Input << endl;
-	cout << "There are " << index << " characters in the file specified." << endl;
-	system("pause");
+
 	object.Encrypt(Input);
 
 
-	ofstream OutFile("out.txt");
+	ofstream OutFile("Encrypted.txt");
 	// \\/ will allow it to display
-	OutFile << "Result";
+	OutFile << Input;
 	OutFile.close();
 
 

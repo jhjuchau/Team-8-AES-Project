@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string>
-#ifndef Encryptor.h
+
 
 
 #define xtime(x)   ((x << 1) ^ (((x >> 7) & 1) * 0x1b))
@@ -44,7 +44,7 @@ TO DO LIST
 	void ShiftRows();
 	void MixColumns();
 	void Cipher();
-	void Encrypt(string input);
+	string Encrypt(string input);
 };
 
 Encryptor::Encryptor(int in[])
@@ -54,16 +54,16 @@ Encryptor::Encryptor(int in[])
 
 int Encryptor::getSBoxValue(int val)
 {
-	int sbox[256] = {
+	int sbox[256] = {	//each row is 16 long
 		//0     1    2      3     4    5     6     7      8    9     A      B    C     D     E     F
-		0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76, //0
-		0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0, //1
-		0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15, //2
-		0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75, //3
-		0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84, //4
-		0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf, //5
-		0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8, //6
-		0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2, //7
+/*0*/	0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76, //0
+/*16*/	0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0, //1
+/*32*/	0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15, //2
+/*48*/	0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75, //3
+/*64*/	0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84, //4
+/*80*/	0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf, //5
+/*96*/	0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8, //6
+/*112*/	0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2, //7
 		0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73, //8
 		0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb, //9
 		0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c, 0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79, //A
@@ -89,6 +89,20 @@ void Encryptor::KeyExpansion()	//this function puts the RoundKey into the state
 		RoundKey[i * 4 + 3] = Key[i * 4 + 3];
 	}
 
+	//cout << "roundKey[] reads: ";
+	//for (int i = 0; i < 32; i++)
+	//{
+	//	cout << RoundKey[i];
+	//}
+	//cout << endl;
+
+	/*cout << "sbox on d: " << getSBoxValue('d') << endl;
+	cout << "sbox on o: " << getSBoxValue('o') << endl;
+	cout << "sbox on g: " << getSBoxValue('g') << endl;
+	cout << "sbox on blankspace: " << getSBoxValue(' ') << endl;*/
+
+
+
 	while (i < (COLS * (maxRounds + 1)))
 	{
 		for (j = 0; j<4; j++)
@@ -111,34 +125,52 @@ void Encryptor::KeyExpansion()	//this function puts the RoundKey into the state
 
 			// SubWord() is a function that takes a four-byte input word and
 			// applies the S-box to each of the four bytes to produce an output word.
-			// Function Subword()
+			// Effectively the Subword() function
 			{
 				temp[0] = getSBoxValue(temp[0]);
 				temp[1] = getSBoxValue(temp[1]);
 				temp[2] = getSBoxValue(temp[2]);
 				temp[3] = getSBoxValue(temp[3]);
 			}
+			
 			temp[0] = temp[0] ^ Rcon[i / words];
-		}
+	 	}
 
 		else if (words > 6 && i % words == 4)
-
 		{
-			// Function Subword()
+			// Effectively the Subword() function
 			{
 				temp[0] = getSBoxValue(temp[0]);
 				temp[1] = getSBoxValue(temp[1]);
 				temp[2] = getSBoxValue(temp[2]);
 				temp[3] = getSBoxValue(temp[3]);
 			}
-
 		}
-		RoundKey[i * 4 + 0] = RoundKey[(i - words) * 4 + 0] ^ temp[0];
-		RoundKey[i * 4 + 1] = RoundKey[(i - words) * 4 + 1] ^ temp[1];
-		RoundKey[i * 4 + 2] = RoundKey[(i - words) * 4 + 2] ^ temp[2];
-		RoundKey[i * 4 + 3] = RoundKey[(i - words) * 4 + 3] ^ temp[3];
+
+		for (j = 0; j<4; j++)	//replace original RoundKey values with those same values to the power of temp[j]
+		{
+			//cout << "RoundKey[i * 4 + j] before is :" << RoundKey[i * 4 + j] << endl;
+			//cout << "[(i - words) * 4 + j] is :" << (i - words) * 4 + j << endl;
+			//cout << "temp[j] is :" << temp[j] << endl;
+			//cout << "RoundKey[(i - words) * 4 + j] ^ temp[j] is :" << (RoundKey[(i - words) * 4 + j] ^ temp[j]) << endl;
+			RoundKey[i * 4 + j] = RoundKey[(i - words) * 4 + j] ^ temp[j];
+			//cout << "RoundKey[i * 4 + j] after is :" << RoundKey[i * 4 + j]<<endl;
+			//system("pause");
+		}
+		
 		i++;
 	}
+
+	//cout << "i equals " << i << endl;
+	//cout << "In our test case, i should equal 44" << endl;
+	cout << "RoundKey[] reads: ";
+	for (int i = 0; i < 64; i++)
+	{
+		cout << RoundKey[i];
+	}
+	cout << endl;
+	
+	system("pause");
 }
 
 void Encryptor::AddRoundKey(int round)
@@ -153,7 +185,7 @@ void Encryptor::AddRoundKey(int round)
 	}
 }
 
-void Encryptor:: SubBytes()
+void Encryptor::SubBytes()
 {
 	for (int i = 0; i<4; i++)
 	{
@@ -225,6 +257,7 @@ void Encryptor::Cipher()
 		for (j = 0; j<4; j++)
 		{
 			state[j][i] = in[i * 4 + j];
+			cout << "state[j][i]: " << state[j][i] << endl;
 		}
 	}
 
@@ -262,98 +295,84 @@ void Encryptor::Cipher()
 	}
 }
 
-void Encryptor::Encrypt(string Input)
-{
-	int i;
-	// Receive the length of key here.
-	cout << "Input is :" << Input << endl;
+string Encryptor::Encrypt(string Input)
+{	// Receive the length of key here.
+	//while (maxRounds != 128 && maxRounds != 192 && maxRounds != 256)
+	//	{
+	//		printf("Enter the length of Key(128, 192 or 256 only): ");
+	//		scanf_s("%d", &maxRounds);
+	//	}
 
-
-	while (maxRounds != 128 && maxRounds != 192 && maxRounds != 256)
-		{
-			printf("Enter the length of Key(128, 192 or 256 only): ");
-			scanf_s("%d", &maxRounds);
-		}
+	cout << "Key length manually set to 128" << endl;
+	maxRounds = 128;
 
 	// Calculate words and maxRounds from the received value.
 	words = maxRounds / 32;
 	maxRounds = words + 6;
 
-	// Part 1 is for demonstrative purpose. The key and plaintext are given in the program itself.
 
-	//     Part 1: ********************************************************
-
-	// The array temp stores the key.
-
-	// The array temp2 stores the plaintext.
-
-	unsigned char temp[16] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
-
-	//unsigned char temp2[16] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
-	unsigned char temp2[16];
-
-	for (i = 0; i < 16; i++)
-	{
-		temp2[i] = Input[i];
-	}
+	//REDUNDANT CODE? 
+	//The array temp stores the key.
+	// The array inputTemp stores the plaintext.
+	//unsigned char keyTemp[16]; = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
+	//unsigned char inputTemp[16] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
+	//unsigned char inputTemp[16];
+	//for (int i = 0; i < 16; i++)
+	//{
+	//	inputTemp[i] = Input[i];
+	//}
+	//cout << "inputTemp[] reads: ";
+	//for (int i = 0; i < 16; i++)
+	//{
+	//	cout << inputTemp[i];
+	//}
+	//cout << endl;
 
 	// Copy the Key and PlainText
 
-	for (i = 0; i<words * 4; i++)
+	for (int i = 0; i<words * 4; i++)
 		{
-			Key[i] = temp[i];
-			in[i] = temp2[i];
+			//Key[i] = keyArray[i];
+			in[i] = Input[i];
 		}
 
-	//           *********************************************************
-
-	// Uncomment Part 2 if you need to read Key and PlainText from the keyboard.
-
-	//     Part 2: ********************************************************
-
-	//Clear the input buffer
-
-	_flushall();
+	_flushall();	//clears the input buffer
 
 	//Recieve the Key from the user
-
-	printf("Enter the Key in hexadecimal: ");
-
-	for (i = 0; i<words * 4; i++)
-		{
-			scanf_s("%x", &Key[i]);
-		}
-
-	printf("Enter the PlainText in hexadecimal: ");
-
-	for (i = 0; i<COLS * 4; i++)
-		{
-			scanf_s("%x", &in[i]);
-		}
+																//<-------
+	//printf("Enter the Key in hexadecimal: ");
+	//for (int i = 0; i<3; i++)
+	//	{
+	//		//scanf_s("%x", &Key[i]);
+	//		cin >> Key[i];
+	//	}
 
 
-	//             ********************************************************
+	Key[0] = 'd';
+	Key[1] = 'o';
+	Key[2] = 'g';
 
-	// The KeyExpansion routine must be called before encryption.
+	cout << "key[] reads: ";
+	for (int i = 0; i < 32; i++)
+	{
+		cout << Key[i];
+	}
+	cout << endl;
 
-	KeyExpansion();
 
-	// The next function call encrypts the PlainText with the Key using AES algorithm.
+	KeyExpansion();	// The KeyExpansion routine must be called before encryption.
 
-	Cipher();
+	Cipher();		// The next function call encrypts the PlainText with the Key using AES algorithm.
 
 	// Output the encrypted text.
 
 	printf("\nText after encryption:\n");
 
-	for (i = 0; i<words * 4; i++)
+	for (int i = 0; i<words * 4; i++)
 	{
 		printf("%02x ", out[i]);
 	}
 
 	printf("\n\n");
-	system("pause");
-	return;
+	return Input;
 }
-
-#endif
