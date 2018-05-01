@@ -170,7 +170,7 @@ void Encryptor::KeyExpansion()	//this function puts the RoundKey into the state
 	}
 	cout << endl;
 	
-	system("pause");
+	
 }
 
 void Encryptor::AddRoundKey(int round)
@@ -180,7 +180,11 @@ void Encryptor::AddRoundKey(int round)
 	{
 		for (j = 0; j<4; j++)
 		{
+			//cout << "state[" << j << "][" << i << "]: " << state[j][i] << endl;
+			//cout << "RoundKey["<<round<<"*COLS*4+"<<i<<"*COLS+"<<j<<"]: " << RoundKey[round * COLS * 4 + i * COLS + j]<<endl;
 			state[j][i] ^= RoundKey[round * COLS * 4 + i * COLS + j];
+			//cout << "after encryption, state["<<j<<"]["<<i<<"]: " << state[j][i] << endl<<endl;
+			//system("pause");
 		}
 	}
 }
@@ -190,11 +194,9 @@ void Encryptor::SubBytes()
 	for (int i = 0; i<4; i++)
 	{
 		for (int j = 0; j<4; j++)
-
 		{
 			state[i][j] = getSBoxValue(state[i][j]);
 		}
-
 	}
 }
 
@@ -254,10 +256,9 @@ void Encryptor::Cipher()
 
 	for (i = 0; i<4; i++)
 	{
-		for (j = 0; j<4; j++)
+		for (j = 0; j<4; j++)  
 		{
 			state[j][i] = in[i * 4 + j];
-			cout << "state[j][i]: " << state[j][i] << endl;
 		}
 	}
 
@@ -311,6 +312,7 @@ string Encryptor::Encrypt(string Input)
 	maxRounds = words + 6;
 
 
+
 	//REDUNDANT CODE? 
 	//The array temp stores the key.
 	// The array inputTemp stores the plaintext.
@@ -333,7 +335,12 @@ string Encryptor::Encrypt(string Input)
 	for (int i = 0; i<words * 4; i++)
 		{
 			//Key[i] = keyArray[i];
-			in[i] = Input[i];
+			if (i > Input.length())
+			{ 
+				cout << "The input has fewer than 16 characters. Assigning in["<<i<<"] to NULL..." << endl; 
+				in[i] = NULL;
+			}
+			else in[i] = Input[i];
 		}
 
 	_flushall();	//clears the input buffer
