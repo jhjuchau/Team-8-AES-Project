@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string>
+#include <iomanip>
 
 
 
@@ -24,6 +25,7 @@ TO DO LIST
 		//"out" is the output of running in[] through our algorithm
 	 int COLS = 4;
 	 int maxRounds = 0, words = 0;
+	 bool firstrun = true;
 
 	 unsigned char in[16], out[16], state[4][4];
 
@@ -37,14 +39,15 @@ TO DO LIST
 //	------METHODS-------
 	Encryptor();
 	Encryptor(int in[]); 
+	void EncryptionController(string input);
 	int getSBoxValue(int val);
-	void KeyExpansion();
+	void ExpandKey();
 	void AddRoundKey(int round);
 	void SubBytes();
 	void ShiftRows();
 	void MixColumns();
 	void Cipher();
-	string Encrypt(string input);
+	void Encrypt(string input);
 };
 
 Encryptor::Encryptor(int in[])
@@ -76,7 +79,7 @@ int Encryptor::getSBoxValue(int val)
 	return sbox[val];
 }
 
-void Encryptor::KeyExpansion()	//this function puts the RoundKey into the state
+void Encryptor::ExpandKey()	//this function puts the RoundKey into the state
 {
 	int i, j;
 	unsigned char temp[4], k;
@@ -88,19 +91,6 @@ void Encryptor::KeyExpansion()	//this function puts the RoundKey into the state
 		RoundKey[i * 4 + 2] = Key[i * 4 + 2];
 		RoundKey[i * 4 + 3] = Key[i * 4 + 3];
 	}
-
-	//cout << "roundKey[] reads: ";
-	//for (int i = 0; i < 32; i++)
-	//{
-	//	cout << RoundKey[i];
-	//}
-	//cout << endl;
-
-	/*cout << "sbox on d: " << getSBoxValue('d') << endl;
-	cout << "sbox on o: " << getSBoxValue('o') << endl;
-	cout << "sbox on g: " << getSBoxValue('g') << endl;
-	cout << "sbox on blankspace: " << getSBoxValue(' ') << endl;*/
-
 
 
 	while (i < (COLS * (maxRounds + 1)))
@@ -154,22 +144,21 @@ void Encryptor::KeyExpansion()	//this function puts the RoundKey into the state
 			//cout << "temp[j] is :" << temp[j] << endl;
 			//cout << "RoundKey[(i - words) * 4 + j] ^ temp[j] is :" << (RoundKey[(i - words) * 4 + j] ^ temp[j]) << endl;
 			RoundKey[i * 4 + j] = RoundKey[(i - words) * 4 + j] ^ temp[j];
-			//cout << "RoundKey[i * 4 + j] after is :" << RoundKey[i * 4 + j]<<endl;
-			//system("pause");
 		}
 		
 		i++;
 	}
 
-	//cout << "i equals " << i << endl;
-	//cout << "In our test case, i should equal 44" << endl;
-	cout << "RoundKey[] reads: ";
-	for (int i = 0; i < 64; i++)
+	if (firstrun)
 	{
-		cout << RoundKey[i];
+
+		cout << "First 64 characters of RoundKey[] reads: ";
+		for (int i = 0; i < 64; i++)
+		{
+			cout << RoundKey[i];
+		}
+		cout << endl;
 	}
-	cout << endl;
-	
 	
 }
 
@@ -203,15 +192,16 @@ void Encryptor::SubBytes()
 void Encryptor::ShiftRows()
 {
 	unsigned char temp;
-	// Rotate first row 1 columns to left
+	// Row at index 0, the "first row", is untouched
+
+	// Rotates row at index 1 a column to the left
 	temp = state[1][0];
 	state[1][0] = state[1][1];
 	state[1][1] = state[1][2];
 	state[1][2] = state[1][3];
 	state[1][3] = temp;
 
-	// Rotate second row 2 columns to left
-
+	// Rotates row at index 2 two columns to the left
 	temp = state[2][0];
 	state[2][0] = state[2][2];
 	state[2][2] = temp;
@@ -221,7 +211,7 @@ void Encryptor::ShiftRows()
 	state[2][1] = state[2][3];
 	state[2][3] = temp;
 
-	// Rotate third row 3 columns to left
+	// Rotates row at index 3 three columns to left
 
 	temp = state[3][0];
 
@@ -252,8 +242,7 @@ void Encryptor::Cipher()
 {
 	int i, j, round = 0;
 
-	//Copy the input PlainText to state array.
-
+	//
 	for (i = 0; i<4; i++)
 	{
 		for (j = 0; j<4; j++)  
@@ -266,24 +255,21 @@ void Encryptor::Cipher()
 
 	AddRoundKey(0);
 
-	// The number of rounds is equal to the value stored within maxRounds
-	// The first (maxRounds-1) rounds are identical.
-	// These (maxRounds-1) rounds are executed in the loop below.
-
+	//We called this the "Round loop" in our report. It executes four methods that result in a satisfactory AES encryption.
+	//These instructions repeat (maxrounds-1) times, with the final loop discluding the MixColumns() step
 	for (round = 1; round<maxRounds; round++)
 	{
 		SubBytes();
 		ShiftRows();
-		MixColumns();
+		MixColumns(); 
 		AddRoundKey(round);
 	}
-	// The last round is given below.
-	// The MixColumns function is not here in the last round.
-
+	
+	//The final "Round loop" discludes MixColumns(), as per the Advanced Encryption Standard
 	SubBytes();
 	ShiftRows();
 	AddRoundKey(maxRounds);
-	// The encryption process is over.
+	
 
 	// Copy the state array to output array.
 
@@ -296,90 +282,123 @@ void Encryptor::Cipher()
 	}
 }
 
-string Encryptor::Encrypt(string Input)
-{	// Receive the length of key here.
-	//while (maxRounds != 128 && maxRounds != 192 && maxRounds != 256)
-	//	{
-	//		printf("Enter the length of Key(128, 192 or 256 only): ");
-	//		scanf_s("%d", &maxRounds);
-	//	}
-
-	cout << "Key length manually set to 128" << endl;
-	maxRounds = 128;
-
-	// Calculate words and maxRounds from the received value.
-	words = maxRounds / 32;
-	maxRounds = words + 6;
-
-
-
-	//REDUNDANT CODE? 
-	//The array temp stores the key.
-	// The array inputTemp stores the plaintext.
-	//unsigned char keyTemp[16]; = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
-	//unsigned char inputTemp[16] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
-	//unsigned char inputTemp[16];
-	//for (int i = 0; i < 16; i++)
-	//{
-	//	inputTemp[i] = Input[i];
-	//}
-	//cout << "inputTemp[] reads: ";
-	//for (int i = 0; i < 16; i++)
-	//{
-	//	cout << inputTemp[i];
-	//}
-	//cout << endl;
-
-	// Copy the Key and PlainText
-
+void Encryptor::Encrypt(string Input)
+{	
+	// Copy the contents of Input into an operable in[] array of length 16. If Input has fewer than 16 characters, assign the empty spaces to NULL.
 	for (int i = 0; i<words * 4; i++)
 		{
 			//Key[i] = keyArray[i];
 			if (i > Input.length())
 			{ 
-				cout << "The input has fewer than 16 characters. Assigning in["<<i<<"] to NULL..." << endl; 
+				cout << "The input has fewer than "<<words*4<<" characters. Assigning in["<<i<<"] to NULL..." << endl; 
 				in[i] = NULL;
 			}
 			else in[i] = Input[i];
 		}
 
 	_flushall();	//clears the input buffer
-
-	//Recieve the Key from the user
-																//<-------
-	//printf("Enter the Key in hexadecimal: ");
-	//for (int i = 0; i<3; i++)
-	//	{
-	//		//scanf_s("%x", &Key[i]);
-	//		cin >> Key[i];
-	//	}
-
-
-	Key[0] = 'd';
-	Key[1] = 'o';
-	Key[2] = 'g';
-
-	cout << "key[] reads: ";
-	for (int i = 0; i < 32; i++)
-	{
-		cout << Key[i];
-	}
-	cout << endl;
-
-
-	KeyExpansion();	// The KeyExpansion routine must be called before encryption.
-
+	
+	
+	ExpandKey();
 	Cipher();		// The next function call encrypts the PlainText with the Key using AES algorithm.
 
-	// Output the encrypted text.
+	firstrun = false;
+}
 
-	printf("\nText after encryption:\n");
+void Encryptor::EncryptionController(string Input)
+{
+	//Receive the length of key here.
+	int keyLength = 0;
+	while (keyLength != 128 && keyLength != 192 && keyLength != 256)
+		{
+			cout << "Enter your Key size. Only lengths 128, 192 and 256 are allowed: ";
+			scanf_s("%d", &keyLength);
+		}
 
-	for (int i = 0; i<words * 4; i++)
+
+	string keyIn;
+	//User inputs the key's value
+	printf("Enter the Key in ASCII format: ");
+	cin >> keyIn;
+
+
+	for (int i = 0; i < 32; i++)
 	{
-		printf("%02x ", out[i]);
+		if (i > keyIn.length()){  Key[i] = NULL;  }
+		else Key[i] = keyIn[i];
 	}
 
-	printf("\n\n");
-	return Input;
+
+		cout << "key[] reads: ";
+		for (int i = 0; i < 32; i++)
+		{			cout << Key[i];		}
+		cout << endl;
+
+
+
+
+	/*cout << "Key length manually set to 128" << endl;
+	maxRounds = 128;*/
+
+	// Calculate words and maxRounds from the received value.
+	words = keyLength / 32;
+	maxRounds = (keyLength/32) + 6;
+
+
+	string concatenatedInput = Input;
+	int reps;
+	int size = words * 4;
+	ofstream OutFile("Encrypted.txt");
+	OutFile << std::hex;	//sets the output stream to only print in hexadecimal values
+
+
+//initializing reps
+	if (Input.length() % size == 0)
+	{
+		cout << "The input length " << Input.length() << " is exactly divisible by 16." << endl;
+		reps = (Input.length() / size);
+	}
+	else { reps = trunc(Input.length() / size) + 1; }	//trunc() always rounds down; in conjunction with +1, this covers any remainder
+
+	cout << "This algorithm will loop " << reps << " times." << endl;
+//end reps calculations
+
+
+
+	cout << "\n------------------------------------" << endl;
+	//Encryption loop
+	for (int i = 0; i < reps; i++)		//i < reps
+	{	//Print original text
+		cout << "Encryption Loop Repetition #" << i + 1 << endl;
+		Encrypt(concatenatedInput);		//where the actual encryption takes place
+		cout << "Text being encrypted:        |";
+		for (int k = 0; k < size; k++)
+		{
+			if (k > concatenatedInput.length()){ cout << " "; }
+			else cout << concatenatedInput[k];
+		}
+		cout << endl;
+
+		//Print ciphertext
+		cout << "Ciphertext after encryption: |";
+		for (int j = 0; j < size; j++)
+		{
+			printf("%02x ", out[j]);
+			OutFile << static_cast<int>(out[j]);	//print the value at out[j] to file
+			OutFile << ' ';							//put a space between each encrypted character so the output file is more legible
+		}
+
+
+		concatenatedInput.erase(0, 16);
+		cout << "\nRemaining Text to encrypt:   |" << concatenatedInput << endl;
+		cout << "\n------------------------------------" << endl;
+
+		 //delete the first 16 characters of the string that contains a copy of the input
+		OutFile << '\n';	//prints the next 16 characters on a new line
+		
+		
+	}
+	OutFile.close();
+
+	cout << "Encryption complete! Output saved in 'Encrypted.txt'. Press any key to close the program." << endl;
 }

@@ -36,26 +36,16 @@ int main()
 	ifstream TheFile;
 	std::ifstream ifs(FileLocation);
 	std::string Input((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-	string Output;
+	string CipherText;
 
 	//get file location
-	//cout << "Please enter the location of the file: ";				//<----
-	//getline(cin, FileLocation);										//<----
+	cout << "Please enter the location of the file: ";				
+	getline(cin, FileLocation);										
 
 	FileLocation = "C:/Users/James/Desktop/test.txt";
 	//opens the file
 	
-	
-	/*string one, two = "two ", three = "three.";
-	one = two;
-	one += three;
-	cout << one << endl;
-	system("pause");*/
 
-	//string hey = "123456789101112";
-	//hey.erase(0, 10);
-	//cout << hey << endl;
-	//system("pause");
 
 
 	//check if the file is opened properly
@@ -75,33 +65,7 @@ int main()
 	cout << "In main, Input is: " << Input << endl;
 	cout << "Input is " << Input.length() << " characters long. " << endl;
 
-	//Input.length()%16 is the number of 16-byte segments we'll have to encrypt, 
-	
-	int reps; 
-		if (Input.length() % 16 == 0)
-		{
-			cout << "The input length " << Input.length() << " is exactly divisible by 16." << endl;
-			reps = (Input.length() / 16);
-		}
-		else {reps = trunc(Input.length() / 16) + 1; }	//trunc() always rounds down; in conjunction with +1, this covers any remainder
-
-	cout << "This algorithm will loop "<<reps <<" times."<< endl;
-
-
-	for (int i = 0; i < reps; i++)	
-	{
-		cout << "concatenatedInput: " << concatenatedInput << endl;
-		object.Encrypt(concatenatedInput);
-		concatenatedInput.erase(0, 16);
-	}
-
-
-
-	ofstream OutFile("Encrypted.txt");
-	// \\/ will allow it to display
-	OutFile << Input;
-	OutFile.close();
-
+	object.EncryptionController(Input);
 
 	system("pause");
 	return 0;
