@@ -29,41 +29,37 @@ int main()
 		0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd,
 		0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb };
 
-
 	Encryptor object(Rcon);
-	string FileLocation;
-							FileLocation = "C:/Users/James/Desktop/test.txt";
-	ifstream TheFile;
-	std::ifstream ifs(FileLocation);
-	std::string Input((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-	string CipherText;
+
+
+
 
 	//get file location
-	cout << "Please enter the location of the file: ";				
-	getline(cin, FileLocation);										
+	string FileLocation;
+	cout << "Please enter the location of the file: ";
+	getline(cin, FileLocation);
 
-	FileLocation = "C:/Users/James/Desktop/test.txt";
-	//opens the file
 	
-
-
-
+	
+	
+	std::ifstream ifs(FileLocation);
 	//check if the file is opened properly
-	while (TheFile.fail())
+	while (ifs.fail())
 	{
 		cout << "The file at location " << FileLocation << " failed to open." << endl;
 		cout << "Please enter the location of the file again." << endl;
 		getline(cin, FileLocation);
-		TheFile.open(FileLocation);
+		ifs.open(FileLocation);
 	}
 
-	//extracts the content from the file
-	TheFile >> Input;
-	TheFile.close();
+	//creates a string that contains the content of the input file
+	std::string Input((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+
+	
 	string concatenatedInput = Input;
 	
-	cout << "In main, Input is: " << Input << endl;
-	cout << "Input is " << Input.length() << " characters long. " << endl;
+	cout << "Input is: " << Input << endl;
+	cout << "The input string is " << Input.length() << " characters long. " << endl;
 
 	object.EncryptionController(Input);
 

@@ -1,3 +1,5 @@
+#include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <string>
 #include <iomanip>
@@ -5,41 +7,29 @@
 
 
 #define xtime(x)   ((x << 1) ^ (((x >> 7) & 1) * 0x1b))
-#define RCONSIZE 255
 
 using namespace std;
 
-/*
-TO DO LIST
-----------
--See if changing all chars to unsigned affects the code's actual execution
--Rename variables in MixColumns, maybe rewrite as nested for loop
-*/
 
-
- class Encryptor{
- public: 
-
+ class Encryptor{	//the methods within this class allow the user to encrypt any given input string in an AES-compliant fashion
 		//"in" is 16 characters worth of plaintext that our algorithm will operate on
 		//"state" holds the value of in[] as it runs through our algorithm
 		//"out" is the output of running in[] through our algorithm
-	 int COLS = 4;
+	 unsigned char in[16], out[16], state[4][4];
+
+
+	 int COLS = 4;		
 	 int maxRounds = 0, words = 0;
 	 bool firstrun = true;
 
-	 unsigned char in[16], out[16], state[4][4];
+	 
 
-	 unsigned char RoundKey[240];	//look into making this just 'char RoundKey
-
-	 unsigned char Key[32];
-
-	 int* Rcon = new int[255];
+	 unsigned char RoundKey[240], Key[32];
+	 int* Rcon = new int[255];		//it is difficult to initialize an array with set values within a class in C++, so I worked around this by having you pass the Rcon table in as an argument to a constructor.
+									//it's a pretty lazy solution but it was all I could think to do
 
 
-//	------METHODS-------
-	Encryptor();
-	Encryptor(int in[]); 
-	void EncryptionController(string input);
+//	------PRIVATE METHODS-------
 	int getSBoxValue(int val);
 	void ExpandKey();
 	void AddRoundKey(int round);
@@ -48,14 +38,41 @@ TO DO LIST
 	void MixColumns();
 	void Cipher();
 	void Encrypt(string input);
+
+ public:			//employing encapsulation by only allowing the callee access to the constructor and encryption start point
+	 Encryptor();
+	 Encryptor(int in[]);
+	 void EncryptionController(string input);
 };
 
-Encryptor::Encryptor(int in[])
+ Encryptor::Encryptor()	//i kept getting some "left of '.EncryptionController' must have class/struct/union" error when i attempt to make the Encryptor object using this contructor, so this code is unused
+ {
+	 int in[255] = { 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a,
+		 0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39,
+		 0x72, 0xe4, 0xd3, 0xbd, 0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a,
+		 0x74, 0xe8, 0xcb, 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8,
+		 0xab, 0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef,
+		 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd, 0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc,
+		 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b,
+		 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3,
+		 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd, 0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94,
+		 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20,
+		 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35,
+		 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd, 0x61, 0xc2, 0x9f,
+		 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d, 0x01, 0x02, 0x04,
+		 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63,
+		 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd,
+		 0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb };
+
+	 Rcon = in;
+ }
+
+Encryptor::Encryptor(int in[])	//constructor that accepts an array for the Rcon table, because it was the first workaround that worked and I didn't want to deal with it
 {
 	Rcon = in;
 }
 
-int Encryptor::getSBoxValue(int val)
+int Encryptor::getSBoxValue(int val)	//returns a value on the Rijndael Substitution Box that corresponds to the integer value of the character passed in
 {
 	int sbox[256] = {	//each row is 16 long
 		//0     1    2      3     4    5     6     7      8    9     A      B    C     D     E     F
@@ -92,7 +109,6 @@ void Encryptor::ExpandKey()	//this function puts the RoundKey into the state
 		RoundKey[i * 4 + 3] = Key[i * 4 + 3];
 	}
 
-
 	while (i < (COLS * (maxRounds + 1)))
 	{
 		for (j = 0; j<4; j++)
@@ -101,48 +117,33 @@ void Encryptor::ExpandKey()	//this function puts the RoundKey into the state
 		}
 
 		if (i % words == 0)
-		{
-			// This function rotates the 4 bytes in a word to the left once.
-			// [a0,a1,a2,a3] becomes [a1,a2,a3,a0]
-			// Function RotWord()
-			{
+		{		
+				//identical to a function called RotWord(), simply implemented here 
 				k = temp[0];
 				temp[0] = temp[1];
 				temp[1] = temp[2];
 				temp[2] = temp[3];
 				temp[3] = k;
-			}
-
-			// SubWord() is a function that takes a four-byte input word and
-			// applies the S-box to each of the four bytes to produce an output word.
-			// Effectively the Subword() function
-			{
+				//virtually identical to SubWord(), but implemented here to save time passing arguments around
 				temp[0] = getSBoxValue(temp[0]);
 				temp[1] = getSBoxValue(temp[1]);
 				temp[2] = getSBoxValue(temp[2]);
 				temp[3] = getSBoxValue(temp[3]);
-			}
 			
-			temp[0] = temp[0] ^ Rcon[i / words];
+			temp[0] ^= Rcon[i / words];	//the first element of the new temp array is XOR'd with a value in the Rcon table
 	 	}
 
 		else if (words > 6 && i % words == 4)
 		{
-			// Effectively the Subword() function
-			{
+			//again, virtually identical to SubWord()
 				temp[0] = getSBoxValue(temp[0]);
 				temp[1] = getSBoxValue(temp[1]);
 				temp[2] = getSBoxValue(temp[2]);
 				temp[3] = getSBoxValue(temp[3]);
-			}
 		}
 
-		for (j = 0; j<4; j++)	//replace original RoundKey values with those same values to the power of temp[j]
+		for (j = 0; j<4; j++)	//replace original RoundKey values with those same values XOR'd with temp[j]
 		{
-			//cout << "RoundKey[i * 4 + j] before is :" << RoundKey[i * 4 + j] << endl;
-			//cout << "[(i - words) * 4 + j] is :" << (i - words) * 4 + j << endl;
-			//cout << "temp[j] is :" << temp[j] << endl;
-			//cout << "RoundKey[(i - words) * 4 + j] ^ temp[j] is :" << (RoundKey[(i - words) * 4 + j] ^ temp[j]) << endl;
 			RoundKey[i * 4 + j] = RoundKey[(i - words) * 4 + j] ^ temp[j];
 		}
 		
@@ -162,23 +163,19 @@ void Encryptor::ExpandKey()	//this function puts the RoundKey into the state
 	
 }
 
-void Encryptor::AddRoundKey(int round)
+void Encryptor::AddRoundKey(int round)	//this function XORs each element in the state table with a value from the RoundKey. Each additional 'round' adds 16 to the index of the roundkey
 {
 	int i, j;
 	for (i = 0; i<4; i++)
 	{
 		for (j = 0; j<4; j++)
 		{
-			//cout << "state[" << j << "][" << i << "]: " << state[j][i] << endl;
-			//cout << "RoundKey["<<round<<"*COLS*4+"<<i<<"*COLS+"<<j<<"]: " << RoundKey[round * COLS * 4 + i * COLS + j]<<endl;
 			state[j][i] ^= RoundKey[round * COLS * 4 + i * COLS + j];
-			//cout << "after encryption, state["<<j<<"]["<<i<<"]: " << state[j][i] << endl<<endl;
-			//system("pause");
 		}
 	}
 }
 
-void Encryptor::SubBytes()
+void Encryptor::SubBytes()	//this function swaps all elements of the state table with their corresponding element in the Rijndael Substitution Box
 {
 	for (int i = 0; i<4; i++)
 	{
@@ -219,26 +216,41 @@ void Encryptor::ShiftRows()
 	state[3][3] = state[3][2];
 	state[3][2] = state[3][1];
 	state[3][1] = temp;
-
 }
 
-void Encryptor::MixColumns()	//maybe rewrite this as a nested for-loop? definitely rename variables
+void Encryptor::MixColumns()	//this function shuffles the columns by XORing the columns amongst themselves
 {
 	int i;
-	unsigned char Tmp, Tm, t;
+	unsigned char a, temp, first;
 
 	for (i = 0; i<4; i++)
 	{
-		t = state[0][i];
-		Tmp = state[0][i] ^ state[1][i] ^ state[2][i] ^ state[3][i];
-		Tm = state[0][i] ^ state[1][i]; Tm = xtime(Tm); state[0][i] ^= Tm ^ Tmp;
-		Tm = state[1][i] ^ state[2][i]; Tm = xtime(Tm); state[1][i] ^= Tm ^ Tmp;
-		Tm = state[2][i] ^ state[3][i]; Tm = xtime(Tm); state[2][i] ^= Tm ^ Tmp;
-		Tm = state[3][i] ^ t; Tm = xtime(Tm); state[3][i] ^= Tm ^ Tmp;
+		first = state[0][i];
+		a = state[0][i] ^ state[1][i] ^ state[2][i] ^ state[3][i];
+		temp = state[0][i] ^ state[1][i]; 
+
+
+		temp = xtime(temp);				//temp is constantly reinitialized so the pseudorandom number for column mixing is always slightly different
+		state[0][i] ^= temp ^ a;
+		temp = state[1][i] ^ state[2][i]; 
+
+
+		temp = xtime(temp); 
+		state[1][i] ^= temp ^ a;
+		temp = state[2][i] ^ state[3][i]; 
+
+
+		temp = xtime(temp); 
+		state[2][i] ^= temp ^ a;
+		temp = state[3][i] ^ first; 
+
+
+		temp = xtime(temp); 
+		state[3][i] ^= temp ^ a;
 	}
 }
 
-void Encryptor::Cipher()
+void Encryptor::Cipher()	//this function puts the input array into the state array, then calls the "Round Loop"
 {
 	int i, j, round = 0;
 
@@ -255,7 +267,7 @@ void Encryptor::Cipher()
 
 	AddRoundKey(0);
 
-	//We called this the "Round loop" in our report. It executes four methods that result in a satisfactory AES encryption.
+	//We called this the "Round Loop" in our report. It executes four methods that result in AES-compliant encryption
 	//These instructions repeat (maxrounds-1) times, with the final loop discluding the MixColumns() step
 	for (round = 1; round<maxRounds; round++)
 	{
@@ -265,24 +277,23 @@ void Encryptor::Cipher()
 		AddRoundKey(round);
 	}
 	
-	//The final "Round loop" discludes MixColumns(), as per the Advanced Encryption Standard
+	//The final "Round loop" discludes MixColumns(), as per AES convention
 	SubBytes();
 	ShiftRows();
 	AddRoundKey(maxRounds);
 	
 
 	// Copy the state array to output array.
-
 	for (i = 0; i<4; i++)
 	{
 		for (j = 0; j<4; j++)
 		{
-			out[i * 4 + j] = state[j][i];
+			out[i*4 + j] = state[j][i];
 		}
 	}
 }
 
-void Encryptor::Encrypt(string Input)
+void Encryptor::Encrypt(string Input)	//some important calls were moved out of EncryptionController to keep it from getting too bloated
 {	
 	// Copy the contents of Input into an operable in[] array of length 16. If Input has fewer than 16 characters, assign the empty spaces to NULL.
 	for (int i = 0; i<words * 4; i++)
@@ -296,29 +307,29 @@ void Encryptor::Encrypt(string Input)
 			else in[i] = Input[i];
 		}
 
-	_flushall();	//clears the input buffer
+	_flushall();	//clearing the input buffer to ensure no loose characters slide in
 	
-	
-	ExpandKey();
-	Cipher();		// The next function call encrypts the PlainText with the Key using AES algorithm.
+	ExpandKey();	//populates the RoundKey array with characters permuted from the original Key
+	Cipher();		// Cipher() actually encrypts the input text
 
-	firstrun = false;
+	firstrun = false;	//the RoundKey is only printed to the user during the first run, to avoid redundancy
 }
 
-void Encryptor::EncryptionController(string Input)
+void Encryptor::EncryptionController(string Input)		//the host function that calls the other methods in the order they need to operate
 {
 	//Receive the length of key here.
 	int keyLength = 0;
 	while (keyLength != 128 && keyLength != 192 && keyLength != 256)
 		{
+			keyLength = 0;
 			cout << "Enter your Key size. Only lengths 128, 192 and 256 are allowed: ";
-			scanf_s("%d", &keyLength);
+			cin >> keyLength;
 		}
 
 
 	string keyIn;
 	//User inputs the key's value
-	printf("Enter the Key in ASCII format: ");
+	cout << "Enter the key in ASCII format: ";
 	cin >> keyIn;
 
 
@@ -331,28 +342,23 @@ void Encryptor::EncryptionController(string Input)
 
 		cout << "key[] reads: ";
 		for (int i = 0; i < 32; i++)
-		{			cout << Key[i];		}
+		{	cout << Key[i];		}
 		cout << endl;
 
 
-
-
-	/*cout << "Key length manually set to 128" << endl;
-	maxRounds = 128;*/
-
-	// Calculate words and maxRounds from the received value.
+	//words and maxRounds are used in several contexts later in the encryption process
 	words = keyLength / 32;
 	maxRounds = (keyLength/32) + 6;
 
 
-	string concatenatedInput = Input;
-	int reps;
-	int size = words * 4;
-	ofstream OutFile("Encrypted.txt");
+	string concatenatedInput = Input;	//to keep the original text intact, we moved the encryption operations to a separate variable
+	int reps;	//a count of the number of required state tables to encrypt the whole plain text, defined below
+	int size = words * 4;	//controls several loops below that change their iteration count based on key length
+	ofstream OutFile("Encrypted.txt");	//the name of the output file
 	OutFile << std::hex;	//sets the output stream to only print in hexadecimal values
 
 
-//initializing reps
+//initializing reps to be equal to input/size, always rounded up
 	if (Input.length() % size == 0)
 	{
 		cout << "The input length " << Input.length() << " is exactly divisible by 16." << endl;
@@ -361,18 +367,22 @@ void Encryptor::EncryptionController(string Input)
 	else { reps = trunc(Input.length() / size) + 1; }	//trunc() always rounds down; in conjunction with +1, this covers any remainder
 
 	cout << "This algorithm will loop " << reps << " times." << endl;
-//end reps calculations
 
 
+
+
+	clock_t tStart = clock();	//now that user input has stopped, the clock that measures runtime starts ticking
 
 	cout << "\n------------------------------------" << endl;
 	//Encryption loop
 	for (int i = 0; i < reps; i++)		//i < reps
 	{	//Print original text
 		cout << "Encryption Loop Repetition #" << i + 1 << endl;
-		Encrypt(concatenatedInput);		//where the actual encryption takes place
+		Encrypt(concatenatedInput);		//Encrypt() calls Cipher() among other things, meaning the actual encryption takes place on this line
+
+
 		cout << "Text being encrypted:        |";
-		for (int k = 0; k < size; k++)
+		for (int k = 0; k < size; k++)	//this loop ensures that if there are NULL characters in the plaintext, it prints a blank space instead of a garbage character
 		{
 			if (k > concatenatedInput.length()){ cout << " "; }
 			else cout << concatenatedInput[k];
@@ -383,7 +393,7 @@ void Encryptor::EncryptionController(string Input)
 		cout << "Ciphertext after encryption: |";
 		for (int j = 0; j < size; j++)
 		{
-			printf("%02x ", out[j]);
+			printf("%02x ", out[j]);				//print the value at out[j] to the screen in 2 digit hex format
 			OutFile << static_cast<int>(out[j]);	//print the value at out[j] to file
 			OutFile << ' ';							//put a space between each encrypted character so the output file is more legible
 		}
@@ -396,9 +406,10 @@ void Encryptor::EncryptionController(string Input)
 		 //delete the first 16 characters of the string that contains a copy of the input
 		OutFile << '\n';	//prints the next 16 characters on a new line
 		
-		
 	}
 	OutFile.close();
 
 	cout << "Encryption complete! Output saved in 'Encrypted.txt'. Press any key to close the program." << endl;
+	cout << "Character count: " << Input.length() << endl;
+	printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);	//these lines are for gathering runtime vs input size data
 }
